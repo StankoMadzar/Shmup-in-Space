@@ -33,7 +33,7 @@ void Game::run()
 	}
 }
 
-void Game::update()
+void Game::updatePollEvents()
 {
 	sf::Event e;
 	while (window->pollEvent(e))
@@ -43,7 +43,10 @@ void Game::update()
 		if (e.Event::KeyPressed && e.Event::key.code == sf::Keyboard::Escape)
 			window->close();
 	}
+}
 
+void Game::updateInput()
+{
 	// Move player
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
 		player->move(-1.0f, 0.f);
@@ -53,6 +56,12 @@ void Game::update()
 		player->move(0.0f, -1.0f);
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
 		player->move(0.0f, 1.0f);
+}
+
+void Game::update()
+{
+	updatePollEvents();
+	updateInput();
 }
 
 void Game::render()
