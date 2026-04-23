@@ -74,17 +74,30 @@ void Game::updateInput()
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
 		player->move(0.0f, 1.0f);
 
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && player->canAttack())
 	{
-		bullets.push_back(new Bullet(this->textures["BULLET"], 100.f, 100.f, 0.f, 0.f, 0.f));
+		bullets.push_back(new Bullet(this->textures["BULLET"], player->getPos().x, player->getPos().y, 0.f, -1.0f, 10.f));
 	}
 }
 
 void Game::updateBullets()
 {
-	for (auto& bullet : bullets)
+	unsigned counter = 0;
+	for (auto *bullet : bullets)
 	{
 		bullet->update();
+
+		// Bullet culling at top of screen
+		if (bullet->getBounds().top + bullet->getBounds().height < 0.f)
+		{
+			// Delete the bullet
+			delete bullets.at(counter);
+			bullets.erase(bullets.begin() + counter);
+			--counter;
+			std::cout << bullets.size() << '\n';
+		}
+
+		++counter;
 	}
 }
 
@@ -92,6 +105,7 @@ void Game::update()
 {
 	updatePollEvents();
 	updateInput();
+	player->update();
 	updateBullets();
 }
 

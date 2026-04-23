@@ -12,14 +12,21 @@ private:
 	sf::Texture texture;
 
 	float moveSpeed;
+	float attackCooldown;
+	float attackCooldownMax;
 
+	void initVariables();
 	void initTexture();
 	void initSprite();
 public:
 	Player();
 	~Player();
 
+	const sf::Vector2f& getPos();
+
 	void move(const float dirX, const float dirY);
+	bool canAttack();
+	void updateAttack();
 	void update();
 	void render(sf::RenderTarget& target);
 };
