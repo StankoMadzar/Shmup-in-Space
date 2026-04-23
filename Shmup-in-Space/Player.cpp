@@ -1,5 +1,12 @@
 #include "Player.h"
 
+void Player::initVariables()
+{
+	moveSpeed = 10.f;
+	attackCooldownMax = 10.0f;
+	attackCooldown = attackCooldownMax;
+}
+
 void Player::initTexture()
 {
 	if (!texture.loadFromFile("Textures/spaceship.png"))
@@ -16,7 +23,7 @@ void Player::initSprite()
 
 Player::Player()
 {
-	moveSpeed = 10.f;
+	initVariables();
 	initTexture();
 	initSprite();
 }
@@ -26,14 +33,36 @@ Player::~Player()
 
 }
 
+const sf::Vector2f& Player::getPos()
+{
+	return sprite.getPosition();
+}
+
 void Player::move(const float dirX, const float dirY)
 {
 	sprite.move(moveSpeed * dirX, moveSpeed * dirY);
 }
 
+bool Player::canAttack()
+{
+	if (attackCooldown > attackCooldownMax)
+	{
+		attackCooldown = 0.f;
+		return true;
+	}
+
+	return false;
+}
+
+void Player::updateAttack()
+{
+	if(attackCooldown <= attackCooldownMax)
+		attackCooldown += 1.f;
+}
+
 void Player::update()
 {
-
+	updateAttack();
 }
 
 void Player::render(sf::RenderTarget& target)

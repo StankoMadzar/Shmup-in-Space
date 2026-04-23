@@ -7,6 +7,12 @@ void Game::initWindow()
 	window->setVerticalSyncEnabled(false);
 }
 
+void Game::initTextures()
+{
+	textures["BULLET"] = new sf::Texture();
+	textures["BULLET"]->loadFromFile("Textures/Bullet.png");
+}
+
 void Game::initPlayer()
 {
 	player = new Player();
@@ -15,6 +21,7 @@ void Game::initPlayer()
 Game::Game()
 {
 	initWindow();
+	initTextures();
 	initPlayer();
 }
 
@@ -22,6 +29,16 @@ Game::~Game()
 {
 	delete window;
 	delete player;
+
+	for (auto &i : textures)
+	{
+		delete i.second;
+	}
+
+	for (auto* i : this->bullets)
+	{
+		delete i;
+	}
 }
 
 void Game::run()
@@ -33,7 +50,7 @@ void Game::run()
 	}
 }
 
-void Game::update()
+void Game::updatePollEvents()
 {
 	sf::Event e;
 	while (window->pollEvent(e))
@@ -43,7 +60,10 @@ void Game::update()
 		if (e.Event::KeyPressed && e.Event::key.code == sf::Keyboard::Escape)
 			window->close();
 	}
+}
 
+void Game::updateInput()
+{
 	// Move player
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
 		player->move(-1.0f, 0.f);
@@ -53,11 +73,49 @@ void Game::update()
 		player->move(0.0f, -1.0f);
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
 		player->move(0.0f, 1.0f);
+
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && player->canAttack())
+	{
+		bullets.push_back(new Bullet(this->textures["BULLET"], player->getPos().x, player->getPos().y, 0.f, -1.0f, 10.f));
+	}
+}
+
+void Game::updateBullets()
+{
+	unsigned counter = 0;
+	for (auto *bullet : bullets)
+	{
+		bullet->update();
+
+		// Bullet culling at top of screen
+		if (bullet->getBounds().top + bullet->getBounds().height < 0.f)
+		{
+			// Delete the bullet
+			delete bullets.at(counter);
+			bullets.erase(bullets.begin() + counter);
+			--counter;
+			std::cout << bullets.size() << '\n';
+		}
+
+		++counter;
+	}
+}
+
+void Game::update()
+{
+	updatePollEvents();
+	updateInput();
+	player->update();
+	updateBullets();
 }
 
 void Game::render()
 {
 	window->clear();
 	player->render(*window);
+	for (auto& bullet : bullets)
+	{
+		bullet->render(window);
+	}
 	window->display();
 }
