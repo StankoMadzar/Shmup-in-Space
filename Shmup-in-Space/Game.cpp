@@ -13,6 +13,17 @@ void Game::initTextures()
 	textures["BULLET"]->loadFromFile("Textures/Bullet.png");
 }
 
+void Game::initGUI()
+{
+	if (!font.loadFromFile("Fonts/ARIAL.TTF"))
+		std::cerr << "ERROR::GAME::Failed to load Arial font" << std::endl;
+
+	pointText.setFont(font);
+	pointText.setCharacterSize(12);
+	pointText.setFillColor(sf::Color::White);
+	pointText.setString("TEST");
+}
+
 void Game::initPlayer()
 {
 	player = new Player();
@@ -28,6 +39,7 @@ Game::Game()
 {
 	initWindow();
 	initTextures();
+	initGUI();
 	initPlayer();
 	initEnemies();
 }
@@ -96,6 +108,10 @@ void Game::updateInput()
 	}
 }
 
+void Game::updateGUI()
+{
+}
+
 void Game::updateBullets()
 {
 	unsigned counter = 0;
@@ -117,7 +133,7 @@ void Game::updateBullets()
 	}
 }
 
-void Game::updateEnemies()
+void Game::updateEnemiesAndCombat()
 {
 	spawnTimer += 0.5f;
 	if (spawnTimer >= spawnTimerMax)
@@ -128,13 +144,28 @@ void Game::updateEnemies()
 
 	for (int i = 0; i < enemies.size(); ++i)
 	{
+		bool enemy_removed = false;
 		enemies[i]->update();
 
-		//Remove enemy at bottom of screen
-		if (enemies[i]->getBounds().top > window->getSize().y)
+		for (size_t k = 0; k < bullets.size() && !enemy_removed; k++)
 		{
-			enemies.erase(enemies.begin() + i);
-			std::cout << enemies.size() << '\n';
+			if (bullets[k]->getBounds().intersects(enemies[i]->getBounds()))
+			{
+				bullets.erase(bullets.begin() + k);
+				enemies.erase(enemies.begin() + i);
+				enemy_removed = true;
+			}
+		}
+
+		//Remove enemy at bottom of screen
+		if (!enemy_removed)
+		{
+			if (enemies[i]->getBounds().top > window->getSize().y)
+			{
+				enemies.erase(enemies.begin() + i);
+				std::cout << enemies.size() << '\n';
+				enemy_removed = true;
+			}
 		}
 	}
 }
@@ -145,7 +176,12 @@ void Game::update()
 	updateInput();
 	player->update();
 	updateBullets();
-	updateEnemies();
+	updateEnemiesAndCombat();
+	updateGUI();
+}
+void Game::renderGUI()
+{
+	window->draw(pointText);
 }
 
 void Game::render()
@@ -161,6 +197,8 @@ void Game::render()
 	{
 		enemy->render(window);
 	}
+
+	renderGUI();
 
 	window->display();
 }

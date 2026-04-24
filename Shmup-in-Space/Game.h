@@ -20,10 +20,14 @@ private:
 	float spawnTimerMax;
 	std::vector<Enemy*> enemies;
 
+	sf::Font font;
+	sf::Text pointText;
+
 	Player* player;
 
 	void initWindow();
 	void initTextures();
+	void initGUI();
 	void initPlayer();
 	void initEnemies();
 public:
@@ -33,9 +37,11 @@ public:
 	void run();
 	void updatePollEvents();
 	void updateInput();
+	void updateGUI();
 	void updateBullets();
-	void updateEnemies();
+	void updateEnemiesAndCombat();
 	void update();
+	void renderGUI();
 	void render();
 };
 
