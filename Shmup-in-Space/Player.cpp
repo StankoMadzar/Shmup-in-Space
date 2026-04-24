@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Enemy.h"
 
 void Player::initVariables()
 {
@@ -36,6 +37,11 @@ Player::~Player()
 const sf::Vector2f& Player::getPos()
 {
 	return sprite.getPosition();
+}
+
+sf::FloatRect Player::getBounds()
+{
+	return sprite.getGlobalBounds();
 }
 
 void Player::move(const float dirX, const float dirY)

@@ -18,11 +18,18 @@ void Game::initPlayer()
 	player = new Player();
 }
 
+void Game::initEnemies()
+{
+	spawnTimerMax = 20.f;
+	spawnTimer = spawnTimerMax;
+}
+
 Game::Game()
 {
 	initWindow();
 	initTextures();
 	initPlayer();
+	initEnemies();
 }
 
 Game::~Game()
@@ -36,6 +43,11 @@ Game::~Game()
 	}
 
 	for (auto* i : this->bullets)
+	{
+		delete i;
+	}
+
+	for (auto* i : this->enemies)
 	{
 		delete i;
 	}
@@ -76,7 +88,11 @@ void Game::updateInput()
 
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && player->canAttack())
 	{
-		bullets.push_back(new Bullet(this->textures["BULLET"], player->getPos().x, player->getPos().y, 0.f, -1.0f, 10.f));
+		bullets.push_back(
+			new Bullet(this->textures["BULLET"], 
+			player->getPos().x + player->getBounds().width / 4.f, 
+			player->getPos().y, 0.f, -1.0f, 10.f)
+		);
 	}
 }
 
@@ -101,12 +117,35 @@ void Game::updateBullets()
 	}
 }
 
+void Game::updateEnemies()
+{
+	spawnTimer += 0.5f;
+	if (spawnTimer >= spawnTimerMax)
+	{
+		enemies.push_back(new Enemy(rand() % window->getSize().x - 20.f, -100.f));
+		spawnTimer = 0.f;
+	}
+
+	for (int i = 0; i < enemies.size(); ++i)
+	{
+		enemies[i]->update();
+
+		//Remove enemy at bottom of screen
+		if (enemies[i]->getBounds().top > window->getSize().y)
+		{
+			enemies.erase(enemies.begin() + i);
+			std::cout << enemies.size() << '\n';
+		}
+	}
+}
+
 void Game::update()
 {
 	updatePollEvents();
 	updateInput();
 	player->update();
 	updateBullets();
+	updateEnemies();
 }
 
 void Game::render()
@@ -117,5 +156,11 @@ void Game::render()
 	{
 		bullet->render(window);
 	}
+
+	for (auto *enemy : enemies)
+	{
+		enemy->render(window);
+	}
+
 	window->display();
 }
